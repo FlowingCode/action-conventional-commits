@@ -17,7 +17,7 @@
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
     "@babel/preset-typescript": "^7.10.1",
-    "@zeit/ncc": "^0.22.0",
+    "@vercel/ncc": "^0.36.1",
     "babel-jest": "^26.0.1",
     "jest": "^26.0.1",
     "prettier": "^2.0.2"
