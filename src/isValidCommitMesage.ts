@@ -1,17 +1,17 @@
 const DEFAULT_COMMIT_TYPES = [
     "feat",
     "fix",
-    "docs",
-    "style",
+    "perf",
     "refactor",
+    "deprecate",
+    "remove",
     "test",
     "build",
-    "perf",
     "ci",
-    "chore",
+    "docs",
+    "style",
     "revert",
-    "merge",
-    "wip",
+    "chore"
 ];
 
 /** types that never correlate with a semantic versioning change*/
