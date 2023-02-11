@@ -1,7 +1,7 @@
 const { context } = require("@actions/github");
 const core = require("@actions/core");
 
-import {isValidCommitMessage, getSemverLevel, SemverLevel} from "./isValidCommitMesage";
+import {validateCommitMessage, getSemverLevel, SemverLevel} from "./isValidCommitMesage";
 import extractCommits from "./extractCommits";
 
 async function run() {
@@ -16,7 +16,9 @@ async function run() {
     core.startGroup("Commit messages:");
     for (let i = 0; i < extractedCommits.length; i++) {
         let commit = extractedCommits[i];
-        if (isValidCommitMessage(commit.message)) {
+        
+        let errmsg = validateCommitMessage(commit.message);
+        if (errmsg === null) {
             const commitSemverLevel = getSemverLevel(commit.message);
             if (commitSemverLevel>semverLevel) semverLevel=commitSemverLevel;
             core.info(`✅ ${commit.message}`);
