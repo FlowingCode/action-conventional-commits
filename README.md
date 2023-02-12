@@ -1,10 +1,12 @@
-# Conventional Commits GitHub Action
+# Flowing Code Conventional Commits GitHub Action
 
-A simple GitHub action that makes sure all commit messages are following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0-beta.2/) specification.
+A simple GitHub action that makes sure all commit messages are following the [Flowing Code Commit Message Guidelines](https://github.com/FlowingCode/DevelopmentConventions/blob/main/conventional-commits.md), 
+based on the Conventional Commits specification.
 
 ![Screenshot](/docs/screenshot.png)
 
 Note that, typically, you would make this check on a pre-commit hook (for example, using something like [Commitlint](https://commitlint.js.org/)), but those can easily be skipped, hence this GitHub action.
+
 
 ### Usage
 Latest version: `v1.1.0`

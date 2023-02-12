@@ -6,7 +6,7 @@ import extractCommits from "./extractCommits";
 
 async function run() {
     core.info(
-        `ℹ️ Checking if commit messages are following the Conventional Commits specification...`
+        `ℹ️ Checking if commit messages are following the Flowing Code Commit Message Guidelines...`
     );
 
     const extractedCommits = await extractCommits(context);
@@ -33,12 +33,12 @@ async function run() {
     
     if (hasErrors) {
         core.setFailed(
-            `🚫 According to the conventional-commits specification, some of the commit messages are not valid.`
+            `🚫 According to the Flowing Code Commit Message Guidelines, some of the commit messages are not valid.`
         );
     } else if (extractedCommits.length === 0) {
         core.info(`No commits to check, skipping...`);
     } else {
-        core.info("🎉 All commit messages are following the Conventional Commits specification.");
+        core.info("🎉 All commit messages are following the Flowing Code Commit Message Guidelines.");
     }
 }
 
