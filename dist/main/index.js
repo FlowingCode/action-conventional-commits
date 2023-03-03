@@ -37709,7 +37709,13 @@ const validateCommitMessage = (message) => {
     if (subject.endsWith('.')) {
         return "The last character of the commit subject must not be a dot";
     }
-    if (/^[A-Z]/.test(subject)) {
+    if (/^\S/.test(subject)) {
+        return "There must be a space after type:";
+    }
+    if (/^\s\s/.test(subject)) {
+        return "There must be a single space after type:";
+    }
+    if (/^\s[A-Z]/.test(subject)) {
         return "Don't capitalize the first letter of the commit subject";
     }
     // Let's remove scope if present.
