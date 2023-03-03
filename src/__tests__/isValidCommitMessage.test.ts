@@ -38,6 +38,8 @@ test("should be able to correctly validate the commit message", () => {
     expect(validateCommitMessage("fix: commit type must be lowercase")).toBeNull();
     expect(validateCommitMessage("FIX: commit type must be uppercase")).toBeTruthy();
     expect(validateCommitMessage("Fix: commit type must be uppercase")).toBeTruthy();
+
+    expect(validateCommitMessage("fix: Commit subject must start with lowercase")).toBeTruthy();
 });
 
 

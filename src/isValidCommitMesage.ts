@@ -58,7 +58,8 @@ export const validateCommitMessage = (message): string | null => {
         return "The last character of the commit subject must not be a dot";
     }
     
-    if (/^[A-Z]/.test(subject)) {
+
+    if (/^\s[A-Z]/.test(subject)) {
         return "Don't capitalize the first letter of the commit subject";
     }
     
