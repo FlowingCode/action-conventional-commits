@@ -111,18 +111,18 @@ export const getSemverLevel = (message): SemverLevel => {
     
     let [commitType] = message.split(":");
     
+    const match = commitType.match(/(\w+)(\(\S*?\))?/);
+    if (match[2]=="(demo)") {
+        //this is a hardcoded exception because we ignore semver when scope is "demo" 🤷‍
+        return 0;
+    }
+    
     if (commitType.endsWith("!")) {
         return 3;
     }
-    
-    const match = commitType.match(/(\w+)(\(\S*?\))?/);
-    if (match[2]=="demo") {
-        //this is a hardcoded exception because we ignore semver when scope is "demo" 🤷‍
-        return 0;
-    } else {
-        //otherwise, ignore scope
-        commitType = match[1];
-    }
+
+    //ignore scope
+    commitType = match[1];
     
     if (commitType=="revert") {
         // the level of semantic versioning change cannot be decided from the commit message alone

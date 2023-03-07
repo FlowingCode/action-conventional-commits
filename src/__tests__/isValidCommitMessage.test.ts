@@ -55,4 +55,6 @@ test("should be able to correctly parse the semver level", () => {
     expect(getSemverLevel("deprecate: foo")).toBe(2);
     expect(getSemverLevel("feat!: foo")).toBe(3);
     expect(getSemverLevel("fix!: foo")).toBe(3);
+    expect(getSemverLevel("feat(demo): foo")).toBe(0);
+    expect(getSemverLevel("feat(demo)!: foo")).toBe(0);
 });
