@@ -37751,18 +37751,16 @@ const validateCommitMessage = (message) => {
 const getSemverLevel = (message) => {
     //precondition: message must be a valid commit message
     let [commitType] = message.split(":");
-    if (commitType.endsWith("!")) {
-        return 3;
-    }
     const match = commitType.match(/(\w+)(\(\S*?\))?/);
-    if (match[2] == "demo") {
+    if (match[2] == "(demo)") {
         //this is a hardcoded exception because we ignore semver when scope is "demo" 🤷‍
         return 0;
     }
-    else {
-        //otherwise, ignore scope
-        commitType = match[1];
+    if (commitType.endsWith("!")) {
+        return 3;
     }
+    //ignore scope
+    commitType = match[1];
     if (commitType == "revert") {
         // the level of semantic versioning change cannot be decided from the commit message alone
         return 0;
