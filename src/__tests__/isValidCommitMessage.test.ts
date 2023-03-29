@@ -36,8 +36,8 @@ test("should be able to correctly validate the commit message", () => {
     expect(validateCommitMessage("revert: must begin with the type of the reverted commit")).toBeTruthy();
     
     expect(validateCommitMessage("fix: commit type must be lowercase")).toBeNull();
-    expect(validateCommitMessage("FIX: commit type must be uppercase")).toBeTruthy();
-    expect(validateCommitMessage("Fix: commit type must be uppercase")).toBeTruthy();
+    expect(validateCommitMessage("FIX: commit type must be lowercase")).toBeTruthy();
+    expect(validateCommitMessage("Fix: commit type must be lowercase")).toBeTruthy();
 
     expect(validateCommitMessage("fix: Commit subject must start with lowercase")).toBeTruthy();
     expect(validateCommitMessage("fix:there must be a space after type")).toBeTruthy();
