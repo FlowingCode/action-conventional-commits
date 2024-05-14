@@ -1,5 +1,5 @@
 name: "Flowing Code Commit Message Guidelines"
 description: "Ensures that all commit messages are following the Flowing Code Commit Message Guidelines."
 runs:
-  using: node16
+  using: node20
   main: dist/main/index.js
