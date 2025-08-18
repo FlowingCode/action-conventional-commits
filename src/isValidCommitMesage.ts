@@ -11,7 +11,8 @@ const DEFAULT_COMMIT_TYPES = [
     "docs",
     "style",
     "revert",
-    "chore"
+    "chore",
+	"WIP",
 ];
 
 /** types that never correlate with a semantic versioning change*/
@@ -39,6 +40,10 @@ const MAJOR_COMMIT_TYPES = [
 ];
 
 export type SemverLevel = 0 | 1 | 2 | 3;
+
+export const isWIP = (message): string | null => {
+	return message.startsWith("WIP:");
+}
 
 export const validateCommitMessage = (message): string | null => {
     
@@ -124,7 +129,7 @@ export const getSemverLevel = (message): SemverLevel => {
     //ignore scope
     commitType = match[1];
     
-    if (commitType=="revert") {
+    if (commitType=="revert" || commitType=="WIP") {
         // the level of semantic versioning change cannot be decided from the commit message alone
         return 0;
     }

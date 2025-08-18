@@ -1,4 +1,4 @@
-import {validateCommitMessage, getSemverLevel} from "../isValidCommitMesage";
+import {validateCommitMessage, isWIP, getSemverLevel} from "../isValidCommitMesage";
 
 test("should be able to correctly validate the commit message", () => {
     
@@ -42,6 +42,9 @@ test("should be able to correctly validate the commit message", () => {
     expect(validateCommitMessage("fix: Commit subject must start with lowercase")).toBeTruthy();
     expect(validateCommitMessage("fix:there must be a space after type")).toBeTruthy();
     expect(validateCommitMessage("fix:  there must be a single space after type")).toBeTruthy();
+	
+	expect(validateCommitMessage("WIP: valid WIP commit")).toBeNull();
+	expect(validateCommitMessage("WIP!: valid WIP breaking commit")).toBeNull();
 });
 
 
@@ -57,4 +60,13 @@ test("should be able to correctly parse the semver level", () => {
     expect(getSemverLevel("fix!: foo")).toBe(3);
     expect(getSemverLevel("feat(demo): foo")).toBe(0);
     expect(getSemverLevel("feat(demo)!: foo")).toBe(0);
+	expect(getSemverLevel("WIP: foo")).toBe(0);
+	expect(getSemverLevel("WIP!: foo")).toBe(3);
+});
+
+test("should be able to correctly detect WIP commits", () => {
+    expect(isWIP("WIP: foo")).toBe(true);
+	expect(isWIP("wip: foo")).toBe(false);
+	expect(isWIP("WIP")).toBe(false);
+	expect(isWIP("fix: foo")).toBe(false);
 });

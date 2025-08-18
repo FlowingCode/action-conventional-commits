@@ -27,9 +27,9 @@ After the action completes, the `SEMVER_LEVEL` environment variable is set accor
 |MAJOR|3| breaking changes (!), `remove`
 |MINOR|2| `feat`, `deprecate` 
 |PATCH|1| `fix`, `refactor`, `build`, `perf`, `chore`
-|NONE |0| `ci`, `style`, `docs`, `test`, `revert`*
+|NONE |0| `ci`, `style`, `docs`, `test`, `revert`, `WIP`*
     
-&nbsp;* `revert` is classified as NONE because the level of semantic versioning change cannot be decided from the commit message alone.
+&nbsp;* `revert` and `WIP` are classified as NONE because the level of semantic versioning change cannot be decided from the commit message alone.
 
 ### Usage
 Latest version: `v1.1.0`
