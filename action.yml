@@ -1,5 +1,15 @@
 name: "Flowing Code Commit Message Guidelines"
 description: "Ensures that all commit messages are following the Flowing Code Commit Message Guidelines."
+inputs:
+  token:
+    description: >
+      The token used to read the commits of a pull request. It defaults to the token of
+      the workflow, which raises the limit from the 60 requests per hour that GitHub
+      allows an unauthenticated caller, counted per IP address and therefore shared with
+      every other job running on the same address. Set it to an empty string to read the
+      commits anonymously.
+    required: false
+    default: ${{ github.token }}
 runs:
   using: node20
   main: dist/main/index.js

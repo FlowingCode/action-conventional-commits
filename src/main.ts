@@ -11,7 +11,7 @@ async function run() {
 
     let extractedCommits;
     try {
-        extractedCommits = await extractCommits(context);
+        extractedCommits = await extractCommits(context, core.getInput('token'));
     } catch (error) {
         // Not being able to analyse anything is a failure of the action itself.
         // SEMVER_LEVEL is exported nonetheless, so that a later step reading it
