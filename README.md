@@ -31,6 +31,19 @@ After the action completes, the `SEMVER_LEVEL` environment variable is set accor
     
 &nbsp;* `revert` and `WIP` are classified as NONE because the level of semantic versioning change cannot be decided from the commit message alone.
 
+### Token
+
+The commits of a pull request are read through the GitHub API, and the request carries the
+token of the workflow by default, so nothing has to be configured:
+
+|Name|Type|Description|
+|---|---|---|
+|`token`|input|The token used to read the commits of a pull request (default `${{ github.token }}`)|
+
+Setting it to an empty string reads them anonymously, which GitHub limits to 60 requests per
+hour per IP address, shared with every other job running on that address, and which cannot
+read a private repository at all. The action warns when it does.
+
 ### Usage
 Latest version: `v1.1.0`
 
