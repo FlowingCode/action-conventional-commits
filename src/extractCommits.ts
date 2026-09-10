@@ -15,18 +15,16 @@ const extractCommits = async (context): Promise<Commit[]> => {
     // For PRs, we need to get a list of commits via the GH API:
     const prCommitsUrl = get(context, "payload.pull_request.commits_url");
     if (prCommitsUrl) {
-        try {
-            const { body } = await got.get(prCommitsUrl, {
-                responseType: "json",
-            });
+        // Failures are propagated rather than turned into an empty list: an empty
+        // list is indistinguishable from a pull request whose commits are all valid.
+        const { body } = await got.get(prCommitsUrl, {
+            responseType: "json",
+        });
 
-            if (Array.isArray(body)) {
-                return body.map((item) => item.commit);
-            }
-            return [];
-        } catch {
-            return [];
+        if (!Array.isArray(body)) {
+            throw new Error(`${prCommitsUrl} did not return a list of commits`);
         }
+        return body.map((item) => item.commit);
     }
 
     return [];
