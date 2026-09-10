@@ -9,7 +9,19 @@ async function run() {
         `ℹ️ Checking if commit messages are following the Flowing Code Commit Message Guidelines...`
     );
 
-    const extractedCommits = await extractCommits(context);
+    let extractedCommits;
+    try {
+        extractedCommits = await extractCommits(context);
+    } catch (error) {
+        // Not being able to analyse anything is a failure of the action itself.
+        // SEMVER_LEVEL is exported nonetheless, so that a later step reading it
+        // does not read an empty value.
+        core.exportVariable('SEMVER_LEVEL', '0');
+        core.setFailed(
+            `🚫 The commit messages could not be checked: ${error instanceof Error ? error.message : error}`
+        );
+        return;
+    }
     
     let semverLevel : SemverLevel = 0;
     let hasErrors = false;
