@@ -41,8 +41,11 @@ const MAJOR_COMMIT_TYPES = [
 
 export type SemverLevel = 0 | 1 | 2 | 3;
 
-export const isWIP = (message): string | null => {
-	return message.startsWith("WIP:");
+export const isWIP = (message): boolean => {
+	// The type is parsed rather than matched as a prefix: "WIP(scope):" and "WIP!:" are
+	// accepted by validateCommitMessage, and were reported as valid commits.
+	const match = message.match(/^(\w+)(\(\S+?\))?(!?): /);
+	return match !== null && match[1] === "WIP";
 }
 
 export const validateCommitMessage = (message): string | null => {

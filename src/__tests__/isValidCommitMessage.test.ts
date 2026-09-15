@@ -66,6 +66,8 @@ test("should be able to correctly parse the semver level", () => {
 
 test("should be able to correctly detect WIP commits", () => {
     expect(isWIP("WIP: foo")).toBe(true);
+	expect(isWIP("WIP(scope): foo")).toBe(true);
+	expect(isWIP("WIP!: foo")).toBe(true);
 	expect(isWIP("wip: foo")).toBe(false);
 	expect(isWIP("WIP")).toBe(false);
 	expect(isWIP("fix: foo")).toBe(false);
