@@ -18,18 +18,29 @@ Note that, typically, you would make this check on a pre-commit hook (for exampl
 - Changes of type `deprecate:`, `test:`, `ci:`, `style:` and `docs:` must not be breaking.
 - Commits of type `remove:` must be breaking changes (i.e. `remove!: something`)
     
-### Outputs
+### Work in Progress
 
-The result of the analysis is available as outputs:
+Commits of type `WIP` are valid, but they must be squashed before rebasing or merging.
+
+By default a WIP commit fails the check. That blocks the merge, but it marks the pull
+request as failing, and an unfinished branch is an expected state rather than an error. A
+check run of its own, concluding `action_required`, blocks the merge without the failure;
+only the workflow can create one, so `enforce: false` leaves that reporting to the caller.
 
 |Name|Type|Description|
 |---|---|---|
+|`enforce`|input|Whether the action reports the outcome and fails on what it found, WIP commits included (default `true`). With `false` it only produces outputs. Any value other than `true` or `false` is an error|
 |`results`|output|The result for every commit, as a JSON array of `{sha, header, level, reason}`, where `level` is `valid`, `wip` or `invalid`|
 
-The `results` output is set before the check fails, so it is available even when the check
-failed. It is set on every path, including the one where the commit messages cannot be
-retrieved: it is then an empty array, and the action fails, so a caller tells that apart
-from a pull request with no findings by the outcome of the step rather than by the output.
+With `enforce: false` the action only analyzes: it does not fail on what it found in the
+commits and writes no annotations, and the caller reports the outcome from `results`. That
+covers invalid commit messages as much as WIP commits: both are in `results`, and both then
+need a conclusion from the caller.
+
+`results` is set on every path, and before the check fails, so it is available whatever the
+outcome. If the commit messages cannot be retrieved it is an empty array, and the action
+fails on that path even with `enforce: false`, so a caller tells it apart from a pull request
+with no findings by the outcome of the step rather than by the output.
 
 ### Semantic Versioning 
 
