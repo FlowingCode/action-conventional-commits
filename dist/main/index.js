@@ -62646,7 +62646,10 @@ const MAJOR_COMMIT_TYPES = [
     "remove",
 ];
 const isWIP = (message) => {
-    return message.startsWith("WIP:");
+    // The type is parsed rather than matched as a prefix: "WIP(scope):" and "WIP!:" are
+    // accepted by validateCommitMessage, and were reported as valid commits.
+    const match = message.match(/^(\w+)(\(\S+?\))?(!?): /);
+    return match !== null && match[1] === "WIP";
 };
 const validateCommitMessage = (message) => {
     let [header] = message.split('\n');
@@ -62781,7 +62784,8 @@ const extractCommits = (context, token) => __awaiter(void 0, void 0, void 0, fun
     // For "push" events, commits can be found in the "context.payload.commits".
     const pushCommits = Array.isArray(lodash_get_default()(context, "payload.commits"));
     if (pushCommits) {
-        return context.payload.commits;
+        core.info(`ℹ️ Read ${context.payload.commits.length} commit(s) from the push payload.`);
+        return context.payload.commits.map((commit) => ({ message: commit.message, sha: commit.id }));
     }
     // For PRs, we need to get a list of commits via the GH API:
     const prCommitsUrl = lodash_get_default()(context, "payload.pull_request.commits_url");
@@ -62790,9 +62794,12 @@ const extractCommits = (context, token) => __awaiter(void 0, void 0, void 0, fun
             core.warning(`⚠️ The commits of the pull request are being read anonymously, which GitHub rate limits per IP address and which cannot read a private repository. The token input is empty: unless that is deliberate, it is a mistake in the configuration.`);
         }
         const items = yield readCommits(prCommitsUrl, token);
-        core.info(`ℹ️ Read ${items.length} commit(s).`);
-        return items.map((item) => item.commit);
+        core.info(`ℹ️ Read ${items.length} commit(s) from the pull request.`);
+        return items.map((item) => ({ message: item.commit.message, sha: item.sha }));
     }
+    // Neither a push nor a pull request: there is nothing to read, and saying which event
+    // it was keeps this apart from a push or a pull request that carries no commits.
+    core.info(`ℹ️ No commits to check: the "${context.eventName}" event has neither a push payload nor a pull request.`);
     return [];
 });
 /* harmony default export */ const src_extractCommits = (extractCommits);
@@ -62811,27 +62818,48 @@ const { context } = __nccwpck_require__(5438);
 const main_core = __nccwpck_require__(2186);
 
 
+function setOutputs(semverLevel, results) {
+    main_core.exportVariable('SEMVER_LEVEL', semverLevel.toString());
+    main_core.setOutput('results', JSON.stringify(results));
+}
 function run() {
     return main_awaiter(this, void 0, void 0, function* () {
         main_core.info(`ℹ️ Checking if commit messages are following the Flowing Code Commit Message Guidelines...`);
+        // action.yml supplies the default whenever the action is called as one, so the input
+        // is absent only when the bundle runs outside Actions, and the fallback is for that
+        // alone. A value that is present but empty was written by the caller — an unset
+        // workflow input interpolated into it, say — and is an error like any other value
+        // that is neither true nor false, rather than silently the default.
+        const input = process.env.INPUT_ENFORCE;
+        const value = input === undefined ? 'true' : input.trim();
+        if (value !== 'true' && value !== 'false') {
+            setOutputs(0, []);
+            main_core.setFailed(`🚫 The enforce input must be true or false, not "${value}".`);
+            return;
+        }
+        /** Whether this action reports the outcome and fails on what it found. When false,
+            it only produces outputs, and the caller is expected to report the outcome. */
+        const enforce = value === 'true';
         let extractedCommits;
         try {
             extractedCommits = yield src_extractCommits(context, main_core.getInput('token'));
         }
         catch (error) {
+            // Reporting is left to the caller only for the outcome of the analysis.
             // Not being able to analyse anything is a failure of the action itself.
-            // SEMVER_LEVEL is exported nonetheless, so that a later step reading it
-            // does not read an empty value.
-            main_core.exportVariable('SEMVER_LEVEL', '0');
+            setOutputs(0, []);
             main_core.setFailed(`🚫 The commit messages could not be checked: ${error instanceof Error ? error.message : error}`);
             return;
         }
         let semverLevel = 0;
         let hasErrors = false;
         let hasWIP = false;
+        const results = [];
         main_core.startGroup("Commit messages:");
         for (let i = 0; i < extractedCommits.length; i++) {
             let commit = extractedCommits[i];
+            const header = commit.message.split('\n')[0];
+            const sha = commit.sha;
             let errmsg = validateCommitMessage(commit.message);
             if (errmsg === null) {
                 const commitSemverLevel = getSemverLevel(commit.message);
@@ -62839,24 +62867,40 @@ function run() {
                     semverLevel = commitSemverLevel;
                 if (isWIP(commit.message)) {
                     hasWIP = true;
+                    results.push({ sha, header, level: 'wip' });
                     main_core.info(`🚧 ${commit.message}`);
                 }
                 else {
+                    results.push({ sha, header, level: 'valid' });
                     main_core.info(`✅ ${commit.message}`);
                 }
             }
             else {
-                main_core.info(`🚩 ${commit.message} : ${errmsg}`);
+                results.push({ sha, header, level: 'invalid', reason: errmsg });
                 hasErrors = true;
+                // When this action reports, core.error creates an annotation on the check
+                // run, so the offending commit is visible on the pull request itself.
+                const digest = sha ? `${sha.substring(0, 7)} ` : '';
+                const line = `🚩 ${digest}${header} : ${errmsg}`;
+                if (enforce)
+                    main_core.error(line);
+                else
+                    main_core.info(line);
             }
         }
         main_core.endGroup();
-        main_core.exportVariable('SEMVER_LEVEL', semverLevel.toString());
+        setOutputs(semverLevel, results);
+        if (!enforce)
+            return;
         if (hasErrors) {
             main_core.setFailed(`🚫 According to the Flowing Code Commit Message Guidelines, some of the commit messages are not valid.`);
         }
         else if (hasWIP) {
-            main_core.setFailed(`🚧 Work-in-Progress (WIP) commits found.`);
+            // A WIP commit must not be merged, and a step cannot both block the merge and
+            // avoid the red X: that needs a check run of its own, which only a caller can
+            // create. So the action keeps failing, and a caller that reports WIP for itself
+            // asks for enforce: false rather than being handed a green check by default.
+            main_core.setFailed(`🚧 Work-in-Progress (WIP) commits found. They must be squashed before rebasing or merging.`);
         }
         else if (extractedCommits.length === 0) {
             main_core.info(`No commits to check, skipping...`);
