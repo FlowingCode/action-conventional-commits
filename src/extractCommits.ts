@@ -5,6 +5,7 @@ import got from "got";
 
 type Commit = {
     message: string;
+    sha?: string;
 };
 
 /** The URL of the next page, taken from the Link header of a response. */
@@ -42,7 +43,8 @@ const extractCommits = async (context, token?: string): Promise<Commit[]> => {
     // For "push" events, commits can be found in the "context.payload.commits".
     const pushCommits = Array.isArray(get(context, "payload.commits"));
     if (pushCommits) {
-        return context.payload.commits;
+        core.info(`ℹ️ Read ${context.payload.commits.length} commit(s) from the push payload.`);
+        return context.payload.commits.map((commit) => ({message: commit.message, sha: commit.id}));
     }
 
     // For PRs, we need to get a list of commits via the GH API:
@@ -55,10 +57,13 @@ const extractCommits = async (context, token?: string): Promise<Commit[]> => {
         }
 
         const items = await readCommits(prCommitsUrl, token);
-        core.info(`ℹ️ Read ${items.length} commit(s).`);
-        return items.map((item) => item.commit);
+        core.info(`ℹ️ Read ${items.length} commit(s) from the pull request.`);
+        return items.map((item) => ({message: item.commit.message, sha: item.sha}));
     }
 
+    // Neither a push nor a pull request: there is nothing to read, and saying which event
+    // it was keeps this apart from a push or a pull request that carries no commits.
+    core.info(`ℹ️ No commits to check: the "${context.eventName}" event has neither a push payload nor a pull request.`);
     return [];
 };
 
