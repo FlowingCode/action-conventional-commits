@@ -1,6 +1,18 @@
 name: "Flowing Code Commit Message Guidelines"
 description: "Ensures that all commit messages are following the Flowing Code Commit Message Guidelines."
 inputs:
+  enforce:
+    description: >
+      Whether this action reports the outcome and fails on what it found, which includes
+      failing on Work-in-Progress (WIP) commits. With false it becomes a pure analyzer:
+      it then only produces outputs, does not fail on what it found in the commits and
+      writes no annotations, and the caller is expected to report the outcome
+      (conclusions, annotations) on its own — which is what a caller that reports WIP
+      commits as a check of its own asks for.
+      Any value other than true or false is an error, so that a misspelling is not read
+      as the default.
+    required: false
+    default: "true"
   token:
     description: >
       The token used to read the commits of a pull request. It defaults to the token of
