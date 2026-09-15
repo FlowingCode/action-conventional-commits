@@ -10,6 +10,12 @@ inputs:
       commits anonymously.
     required: false
     default: ${{ github.token }}
+outputs:
+  results:
+    description: >
+      The result for every commit, as a JSON array of objects with a "sha", a
+      "header", a "level" ("valid", "wip" or "invalid") and, for invalid commits,
+      a "reason".
 runs:
   using: node20
   main: dist/main/index.js
