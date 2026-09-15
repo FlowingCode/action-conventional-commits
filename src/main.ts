@@ -53,7 +53,10 @@ async function run() {
         } else {
             results.push({sha, header, level: 'invalid', reason: errmsg});
             hasErrors = true;
-            core.info(`🚩 ${header} : ${errmsg}`);
+            // core.error creates an annotation on the check run, so the offending
+            // commit and the reason are visible on the pull request itself.
+            const digest = sha ? `${sha.substring(0, 7)} ` : '';
+            core.error(`🚩 ${digest}${header} : ${errmsg}`);
         }
     }
     core.endGroup();
