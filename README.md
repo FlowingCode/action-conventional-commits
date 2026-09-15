@@ -18,6 +18,19 @@ Note that, typically, you would make this check on a pre-commit hook (for exampl
 - Changes of type `deprecate:`, `test:`, `ci:`, `style:` and `docs:` must not be breaking.
 - Commits of type `remove:` must be breaking changes (i.e. `remove!: something`)
     
+### Outputs
+
+The result of the analysis is available as outputs:
+
+|Name|Type|Description|
+|---|---|---|
+|`results`|output|The result for every commit, as a JSON array of `{sha, header, level, reason}`, where `level` is `valid`, `wip` or `invalid`|
+
+The `results` output is set before the check fails, so it is available even when the check
+failed. It is set on every path, including the one where the commit messages cannot be
+retrieved: it is then an empty array, and the action fails, so a caller tells that apart
+from a pull request with no findings by the outcome of the step rather than by the output.
+
 ### Semantic Versioning 
 
 After the action completes, the `SEMVER_LEVEL` environment variable is set according to the highest level of [Semantic Versioning](https://semver.org/spec/v2.0.0.html) change described by the commit messages:

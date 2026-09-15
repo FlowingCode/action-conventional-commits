@@ -4,6 +4,13 @@ const core = require("@actions/core");
 import {validateCommitMessage, isWIP, getSemverLevel, SemverLevel} from "./isValidCommitMesage";
 import extractCommits from "./extractCommits";
 
+type Result = {sha?: string, header: string, level: string, reason?: string};
+
+function setOutputs(semverLevel: SemverLevel, results: Result[]) {
+    core.exportVariable('SEMVER_LEVEL', semverLevel.toString());
+    core.setOutput('results', JSON.stringify(results));
+}
+
 async function run() {
     core.info(
         `ℹ️ Checking if commit messages are following the Flowing Code Commit Message Guidelines...`
@@ -14,9 +21,7 @@ async function run() {
         extractedCommits = await extractCommits(context, core.getInput('token'));
     } catch (error) {
         // Not being able to analyse anything is a failure of the action itself.
-        // SEMVER_LEVEL is exported nonetheless, so that a later step reading it
-        // does not read an empty value.
-        core.exportVariable('SEMVER_LEVEL', '0');
+        setOutputs(0, []);
         core.setFailed(
             `🚫 The commit messages could not be checked: ${error instanceof Error ? error.message : error}`
         );
@@ -26,9 +31,12 @@ async function run() {
     let semverLevel : SemverLevel = 0;
     let hasErrors = false;
     let hasWIP = false;
+    const results : Result[] = [];
     core.startGroup("Commit messages:");
     for (let i = 0; i < extractedCommits.length; i++) {
         let commit = extractedCommits[i];
+        const header = commit.message.split('\n')[0];
+        const sha = commit.sha;
         
         let errmsg = validateCommitMessage(commit.message);
         if (errmsg === null) {
@@ -36,18 +44,21 @@ async function run() {
             if (commitSemverLevel>semverLevel) semverLevel=commitSemverLevel;
             if (isWIP(commit.message)) {
                 hasWIP = true;
+                results.push({sha, header, level: 'wip'});
                 core.info(`🚧 ${commit.message}`);
             } else {
+                results.push({sha, header, level: 'valid'});
                 core.info(`✅ ${commit.message}`);
             }
         } else {
-            core.info(`🚩 ${commit.message} : ${errmsg}`);
+            results.push({sha, header, level: 'invalid', reason: errmsg});
             hasErrors = true;
+            core.info(`🚩 ${header} : ${errmsg}`);
         }
     }
     core.endGroup();
 
-    core.exportVariable('SEMVER_LEVEL', semverLevel.toString()); 
+    setOutputs(semverLevel, results);
     
     if (hasErrors) {
         core.setFailed(
