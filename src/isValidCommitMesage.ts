@@ -56,7 +56,7 @@ export const validateCommitMessage = (message): string | null => {
         return "The commit header is not formatted according to Conventional Commits.";
     }
     
-    if (header.length >= 72) {
+    if (header.length >= 72 && !isWIP(header)) {
         return "The length of the header line (including type and scope) must be less than 72 characters";
     }
 

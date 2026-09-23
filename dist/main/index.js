@@ -62656,7 +62656,9 @@ const validateCommitMessage = (message) => {
     if (!/^\w+(\(\S+?\))?(!?): .+$/.test(header)) {
         return "The commit header is not formatted according to Conventional Commits.";
     }
-    if (header.length >= 72) {
+    // A WIP commit is squashed or reworded before merging, so the length of its header
+    // is irrelevant, and rejecting it would report the commit as invalid instead of WIP.
+    if (header.length >= 72 && !isWIP(header)) {
         return "The length of the header line (including type and scope) must be less than 72 characters";
     }
     let [commitType, subject] = [header.substring(0, header.indexOf(':')), header.substring(header.indexOf(':') + 1)];
