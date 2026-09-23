@@ -45,6 +45,8 @@ test("should be able to correctly validate the commit message", () => {
 	
 	expect(validateCommitMessage("WIP: valid WIP commit")).toBeNull();
 	expect(validateCommitMessage("WIP!: valid WIP breaking commit")).toBeNull();
+	expect(validateCommitMessage("WIP: length is 72 901234567890123456789012345678901234567890123456789012")).toBeNull();
+	expect(validateCommitMessage("WIP(scope): length is 79 901234567890123456789012345678901234567890123456789012")).toBeNull();
 });
 
 
